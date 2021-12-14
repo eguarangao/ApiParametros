@@ -3,8 +3,10 @@ package com.example.apprest;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -28,11 +30,12 @@ public class MainActivity extends AppCompatActivity {
 
     public void btnEnviar(View view) {
 
-       getRetrofit();
+        getRetrofit();
     }
-    public void getRetrofit(){
 
-        Retrofit  retrofit = new Retrofit.Builder().baseUrl("https://api-uat.kushkipagos.com").addConverterFactory(GsonConverterFactory.create()).build();
+    public void getRetrofit() {
+
+        Retrofit retrofit = new Retrofit.Builder().baseUrl("https://api-uat.kushkipagos.com").addConverterFactory(GsonConverterFactory.create()).build();
 
         Bank interfazBanck = retrofit.create(Bank.class);
         Call<List<DataBank>> bancos = interfazBanck.getListAll("da84e6bf7dcb4b2d931d88b015de20f7");
@@ -40,17 +43,26 @@ public class MainActivity extends AppCompatActivity {
         bancos.enqueue(new Callback<List<DataBank>>() {
             @Override
             public void onResponse(Call<List<DataBank>> call, Response<List<DataBank>> response) {
-                String cadena="";
-                List<DataBank> lista = response.body();
-                for (DataBank data: lista){
-                    cadena += "AGENCIA BANCARIA "+data.getCode()+":\n "+data.getName()+"\n\n";
+                String cadena = "";
+                try {
+                    if (response.isSuccessful()) {
+
+                        List<DataBank> lista = response.body();
+                        Log.i("Logs", "Length: " + lista.size());
+
+                        for (DataBank data : lista) {
+                            cadena += "AGENCIA BANCARIA " + data.getCode() + ":\n " + data.getName() + "\n\n";
+                        }
+                    }
+                    multiline.append(cadena);
+                }catch (Exception e){
+                    Toast.makeText(MainActivity.this,e.getMessage(),Toast.LENGTH_SHORT).show();
                 }
-                multiline.append(cadena);
             }
 
             @Override
             public void onFailure(Call<List<DataBank>> call, Throwable t) {
-                multiline.append(t.getMessage()+"ERROR FATAL");
+                Toast.makeText(MainActivity.this,"ERROR FATAL..", Toast.LENGTH_SHORT).show();
 
             }
         });
